@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎈 Jogo de Balões — RH</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ═══════════ SETUP SCREEN ═══════════ -->
+<div class="screen active" id="setup-screen">
+  <h1 class="logo">🎈 Jogo de Balões</h1>
+  <p class="subtitle">Dinâmica de RH — Produtos & Clientes</p>
+
+  <div class="setup-cols">
+
+    <div class="card">
+      <h2>📦 Produtos</h2>
+      <div class="tag-list" id="produto-tags"></div>
+
+      <div class="tag-input-row">
+        <input type="text" id="produto-input" placeholder="Adicionar produto..." />
+        <button class="btn btn-small btn-add" onclick="addItem('produto')">+ Add</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏢 Clientes</h2>
+      <div class="tag-list" id="cliente-tags"></div>
+
+      <div class="tag-input-row">
+        <input type="text" id="cliente-input" placeholder="Adicionar cliente..." />
+        <button class="btn btn-small btn-add" onclick="addItem('cliente')">+ Add</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">🚀 Iniciar Jogo</button>
+    <button class="btn btn-secondary btn-small" onclick="resetToDefaults()">↺ Restaurar Padrão</button>
+  </div>
+
+  <p id="setup-error"></p>
+</div>
+
+<!-- ═══════════ GAME SCREEN ═══════════ -->
+<div class="screen" id="game-screen">
+
+  <div class="game-header">
+    <div class="round-badge" id="round-label">Rodada 1</div>
+
+    <div class="phase-title" id="phase-title">
+      Produtos
+    </div>
+
+    <p class="instructions" id="phase-instructions">
+      Estoure o balão do produto desta rodada!
+    </p>
+  </div>
+
+  <div class="selected-display">
+    <div class="selected-box" id="selected-box">
+      Estoure um balão 🎈
+    </div>
+  </div>
+
+  <div id="arena"></div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill"></div>
+  </div>
+
+  <p class="progress-text" id="progress-text"></p>
+</div>
+
+<!-- ═══════════ REVEAL OVERLAY ═══════════ -->
+<div id="reveal-overlay">
+
+  <div class="reveal-backdrop"></div>
+
+  <div class="reveal-card" id="reveal-card">
+
+    <div class="reveal-emoji" id="reveal-emoji">🎈</div>
+
+    <div class="reveal-label" id="reveal-label">
+      Produto
+    </div>
+
+    <div class="reveal-name" id="reveal-name">
+      Nome
+    </div>
+
+    <div class="reveal-hint" id="reveal-hint">
+      Clique para continuar →
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ═══════════ PAIR OVERLAY ═══════════ -->
+<div id="pair-overlay">
+
+  <div class="pair-backdrop"></div>
+
+  <div class="pair-result-card">
+
+    <div class="pair-result-title">
+      ✨ Par da Rodada
+    </div>
+
+    <div class="pair-result-match">
+
+      <div class="pair-result-item produto-item">
+        <span>📦</span>
+        <span id="pair-produto-name"></span>
+      </div>
+
+      <div class="pair-result-connector">
+        🔗
+      </div>
+
+      <div class="pair-result-item cliente-item">
+        <span>🏢</span>
+        <span id="pair-cliente-name"></span>
+      </div>
+
+    </div>
+
+    <div class="pair-result-round" id="pair-round-info"></div>
+
+    <button class="btn-continue" id="btn-continue-round">
+      Próxima Rodada →
+    </button>
+
+  </div>
+
+</div>
+
+<!-- ═══════════ FINAL SCREEN ═══════════ -->
+<div class="screen" id="final-screen">
+
+  <div class="trophy">🏆</div>
+
+  <div class="final-title">
+    Jogo Concluído!
+  </div>
+
+  <p class="final-subtitle">
+    Todos os balões foram estourados.
+  </p>
+
+  <div class="pairs-grid" id="pairs-grid"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goSetup()">
+      🔄 Jogar Novamente
+    </button>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
