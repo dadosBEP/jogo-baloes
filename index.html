@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎈 Jogo de Balões — RH</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0d0a1e;
+    --panel: #16122e;
+    --accent1: #ff6b6b;
+    --accent2: #ffd93d;
+    --accent3: #6bcb77;
+    --accent4: #4d96ff;
+    --accent5: #c77dff;
+    --text: #f0e8ff;
+    --muted: #7a6f99;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image:
+      radial-gradient(ellipse at 20% 10%, rgba(77,150,255,0.12) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(199,125,255,0.12) 0%, transparent 50%);
+  }
+
+  /* ─── CONFETTI ─── */
+  .confetti-piece {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    top: -20px;
+    pointer-events: none;
+    z-index: 9999;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+  .screen.active { display: flex; }
+
+  /* ─── TITLE ─── */
+  h1.logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    background: linear-gradient(135deg, var(--accent2), var(--accent1), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    filter: drop-shadow(0 0 30px rgba(255,107,107,0.4));
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  /* ─── CARDS / PANELS ─── */
+  .card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 28px 32px;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  }
+
+  .card h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    color: var(--accent2);
+  }
+
+  /* ─── ITEM LIST EDITOR ─── */
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+    min-height: 36px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 50px;
+    padding: 4px 12px 4px 14px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: default;
+    transition: background 0.15s;
+  }
+
+  .tag .remove {
+    background: none;
+    border: none;
+    color: var(--accent1);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+
+  .tag-input-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  input[type="text"] {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="text"]:focus { border-color: var(--accent4); }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.03em;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: transform 0.12s, filter 0.12s, box-shadow 0.12s;
+  }
+
+  .btn:active { transform: scale(0.96); }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #ff6b6b, #ffd93d);
+    color: #1a0a00;
+    box-shadow: 0 4px 20px rgba(255,107,107,0.45);
+  }
+
+  .btn-primary:hover { filter: brightness(1.1); box-shadow: 0 6px 30px rgba(255,107,107,0.6); }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .btn-secondary:hover { background: rgba(255,255,255,0.14); }
+
+  .btn-small {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 8px;
+  }
+
+  .btn-add {
+    background: var(--accent3);
+    color: #0a1a0d;
+    box-shadow: 0 2px 12px rgba(107,203,119,0.4);
+  }
+
+  .btn-add:hover { filter: brightness(1.1); }
+
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  /* ─── GAME ARENA ─── */
+  #game-screen {
+    padding: 16px;
+  }
+
+  .game-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .round-badge {
+    display: inline-block;
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.9rem;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    padding: 4px 18px;
+    margin-bottom: 8px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .phase-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    background: linear-gradient(135deg, var(--accent4), var(--accent5));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .phase-title.produtos { background: linear-gradient(135deg, #ffd93d, #ff6b6b); -webkit-background-clip: text; background-clip: text; }
+  .phase-title.clientes { background: linear-gradient(135deg, #6bcb77, #4d96ff); -webkit-background-clip: text; background-clip: text; }
+
+  .instructions {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  /* ─── BALLOON ARENA ─── */
+  #arena {
+    position: relative;
+    width: 100%;
+    max-width: 700px;
+    height: 380px;
+    margin: 0 auto 20px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+
+  /* ─── BALLOON ─── */
+  .balloon {
+    position: absolute;
+    cursor: pointer;
+    transform-origin: center bottom;
+    animation: floatBalloon linear infinite;
+    transition: transform 0.08s;
+    user-select: none;
+  }
+
+  .balloon:hover { transform: scale(1.08); }
+
+  .balloon-body {
+    width: 90px;
+    height: 108px;
+    border-radius: 50% 50% 50% 50% / 45% 45% 55% 55%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: inset -10px -8px 0 rgba(0,0,0,0.15), 0 6px 30px rgba(0,0,0,0.3);
+    transition: transform 0.1s;
+  }
+
+  .balloon-shine {
+    position: absolute;
+    width: 22px;
+    height: 30px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 50%;
+    top: 14px;
+    left: 18px;
+    transform: rotate(-30deg);
+    pointer-events: none;
+  }
+
+  .balloon-question {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2.2rem;
+    color: rgba(255,255,255,0.85);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    z-index: 1;
+    pointer-events: none;
+    animation: questionPulse 2s ease-in-out infinite;
+  }
+
+  @keyframes questionPulse {
+    0%, 100% { transform: scale(1) rotate(-5deg); opacity: 0.85; }
+    50%       { transform: scale(1.15) rotate(5deg); opacity: 1; }
+  }
+
+  /* ─── REVEAL OVERLAY ─── */
+  #reveal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 8000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  #reveal-overlay.active {
+    pointer-events: all;
+  }
+
+  .reveal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 6, 30, 0.7);
+    backdrop-filter: blur(6px);
+    animation: fadeInBD 0.2s ease forwards;
+  }
+
+  @keyframes fadeInBD {
+    from { opacity: 0; } to { opacity: 1; }
+  }
+
+  .reveal-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    padding: 40px 56px;
+    border-radius: 28px;
+    box-shadow: 0 20px 80px rgba(0,0,0,0.7);
+    border: 2px solid rgba(255,255,255,0.18);
+    animation: revealPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  }
+
+  @keyframes revealPop {
+    0%   { transform: scale(0.2) rotate(-10deg); opacity: 0; }
+    60%  { transform: scale(1.08) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .reveal-emoji {
+    font-size: 3.5rem;
+    animation: emojiSpin 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;
+  }
+
+  @keyframes emojiSpin {
+    from { transform: rotate(-180deg) scale(0); opacity: 0; }
+    to   { transform: rotate(0deg) scale(1); opacity: 1; }
+  }
+
+  .reveal-label {
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeUp 0.3s ease 0.3s forwards;
+  }
+
+  .reveal-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    line-height: 1.1;
+    opacity: 0;
+    animation: fadeUp 0.4s ease 0.45s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal-hint {
+    font-size: 0.8rem;
+    opacity: 0;
+    animation: fadeUp 0.3s ease 0.75s forwards;
+    margin-top: 8px;
+  }
+
+  /* ─── PAIR RESULT OVERLAY ─── */
+  #pair-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 8500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+
+  #pair-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .pair-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 3, 18, 0.82);
+    backdrop-filter: blur(10px);
+  }
+
+  .pair-result-card {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 48px 56px;
+    border-radius: 32px;
+    background: linear-gradient(145deg, #12082a, #0a1220);
+    border: 1.5px solid rgba(255,255,255,0.12);
+    box-shadow: 0 30px 100px rgba(0,0,0,0.8), 0 0 60px rgba(199,125,255,0.15);
+    text-align: center;
+    animation: pairCardIn 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    max-width: 480px;
+    width: 90vw;
+  }
+
+  @keyframes pairCardIn {
+    0%   { transform: scale(0.5) translateY(40px); opacity: 0; }
+    70%  { transform: scale(1.04) translateY(-4px); opacity: 1; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+  }
+
+  .pair-result-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    animation: fadeUp 0.3s ease 0.2s both;
+  }
+
+  .pair-result-match {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    animation: fadeUp 0.4s ease 0.35s both;
+  }
+
+  .pair-result-item {
+    width: 100%;
+    padding: 14px 20px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.4rem;
+  }
+
+  .pair-result-item.produto-item {
+    background: rgba(255,107,107,0.12);
+    border: 1px solid rgba(255,107,107,0.3);
+    color: var(--accent1);
+  }
+
+  .pair-result-item.cliente-item {
+    background: rgba(77,150,255,0.12);
+    border: 1px solid rgba(77,150,255,0.3);
+    color: var(--accent4);
+  }
+
+  .pair-result-connector {
+    font-size: 1.8rem;
+    animation: connectorPop 0.4s cubic-bezier(0.34,1.56,0.64,1) 0.55s both;
+    filter: drop-shadow(0 0 10px rgba(199,125,255,0.6));
+  }
+
+  @keyframes connectorPop {
+    from { transform: scale(0) rotate(-180deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+
+  .pair-result-round {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeUp 0.3s ease 0.6s both;
+  }
+
+  .btn-continue {
+    background: linear-gradient(135deg, #c77dff, #4d96ff);
+    color: #fff;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 36px;
+    cursor: pointer;
+    box-shadow: 0 4px 24px rgba(199,125,255,0.45);
+    transition: transform 0.12s, filter 0.12s;
+    animation: fadeUp 0.4s ease 0.75s both;
+    letter-spacing: 0.04em;
+  }
+
+  .btn-continue:hover { filter: brightness(1.12); transform: scale(1.04); }
+  .btn-continue:active { transform: scale(0.97); }
+
+  .balloon-knot {
+    width: 12px;
+    height: 10px;
+    background: inherit;
+    margin: -2px auto 0;
+    clip-path: polygon(50% 100%, 0 0, 100% 0);
+    filter: brightness(0.7);
+  }
+
+  .balloon-string {
+    width: 1px;
+    height: 50px;
+    background: rgba(255,255,255,0.25);
+    margin: 0 auto;
+  }
+
+  @keyframes floatBalloon {
+    0%   { transform: translateY(0px) rotate(-2deg); }
+    25%  { transform: translateY(-12px) rotate(2deg); }
+    50%  { transform: translateY(-6px) rotate(-1deg); }
+    75%  { transform: translateY(-16px) rotate(3deg); }
+    100% { transform: translateY(0px) rotate(-2deg); }
+  }
+
+  /* Pop animation */
+  @keyframes popAnim {
+    0%   { transform: scale(1); opacity: 1; }
+    30%  { transform: scale(1.6); opacity: 0.8; }
+    60%  { transform: scale(0.3); opacity: 0.3; }
+    100% { transform: scale(0); opacity: 0; }
+  }
+
+  .balloon.popping .balloon-body {
+    animation: popAnim 0.35s ease-out forwards;
+  }
+
+  /* ─── SELECTED CARD ─── */
+  .selected-display {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto 16px;
+  }
+
+  .selected-box {
+    background: rgba(255,255,255,0.05);
+    border: 2px dashed rgba(255,255,255,0.2);
+    border-radius: 14px;
+    padding: 14px 24px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.3rem;
+    color: var(--accent2);
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .selected-box.revealed {
+    border-color: var(--accent3);
+    background: rgba(107,203,119,0.1);
+    color: var(--accent3);
+    animation: pulse 0.4s ease;
+  }
+
+  @keyframes pulse {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.04); }
+    100% { transform: scale(1); }
+  }
+
+  /* ─── PROGRESS ─── */
+  .progress-bar-wrap {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto 8px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50px;
+    height: 8px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 50px;
+    background: linear-gradient(90deg, var(--accent4), var(--accent5));
+    transition: width 0.5s ease;
+  }
+
+  .progress-text {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 16px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ─── FINAL SCREEN ─── */
+  .trophy {
+    font-size: 5rem;
+    margin-bottom: 16px;
+    animation: trophyBounce 1s ease infinite alternate;
+    filter: drop-shadow(0 0 20px rgba(255,217,61,0.6));
+  }
+
+  @keyframes trophyBounce {
+    from { transform: translateY(0) rotate(-5deg); }
+    to   { transform: translateY(-12px) rotate(5deg); }
+  }
+
+  .final-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    background: linear-gradient(135deg, var(--accent2), var(--accent3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+
+  .final-subtitle {
+    color: var(--muted);
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 32px;
+  }
+
+  /* ─── PAIRS LIST ─── */
+  .pairs-grid {
+    width: 100%;
+    max-width: 620px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 500px) {
+    .pairs-grid { grid-template-columns: 1fr; }
+  }
+
+  .pair-card {
+    background: var(--panel);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pair-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .pair-produto {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--accent1);
+  }
+
+  .pair-cliente {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--accent4);
+  }
+
+  .pair-arrow { font-size: 0.7rem; color: var(--muted); }
+
+  /* Popping particles */
+  .particle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: particleFly 0.6s ease-out forwards;
+  }
+
+  @keyframes particleFly {
+    from { opacity: 1; transform: translate(0, 0) scale(1); }
+    to   { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+  }
+
+  .setup-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+  }
+
+  @media (max-width: 640px) {
+    .setup-cols { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ SETUP SCREEN ═══════════ -->
+<div class="screen active" id="setup-screen">
+  <h1 class="logo">🎈 Jogo de Balões</h1>
+  <p class="subtitle">Dinâmica de RH — Produtos & Clientes</p>
+
+  <div class="setup-cols">
+    <!-- PRODUTOS -->
+    <div class="card">
+      <h2>📦 Produtos</h2>
+      <div class="tag-list" id="produto-tags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="produto-input" placeholder="Adicionar produto..." />
+        <button class="btn btn-small btn-add" onclick="addItem('produto')">+ Add</button>
+      </div>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="card">
+      <h2>🏢 Clientes</h2>
+      <div class="tag-list" id="cliente-tags"></div>
+      <div class="tag-input-row">
+        <input type="text" id="cliente-input" placeholder="Adicionar cliente..." />
+        <button class="btn btn-small btn-add" onclick="addItem('cliente')">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="startGame()">🚀 Iniciar Jogo</button>
+    <button class="btn btn-secondary btn-small" onclick="resetToDefaults()">↺ Restaurar Padrão</button>
+  </div>
+  <p id="setup-error" style="color:var(--accent1);margin-top:12px;font-weight:700;display:none;"></p>
+</div>
+
+<!-- ═══════════ GAME SCREEN ═══════════ -->
+<div class="screen" id="game-screen">
+  <div class="game-header">
+    <div class="round-badge" id="round-label">Rodada 1</div>
+    <div class="phase-title" id="phase-title">Produtos</div>
+    <p class="instructions" id="phase-instructions">Estoure o balão do produto desta rodada!</p>
+  </div>
+
+  <div class="selected-display">
+    <div class="selected-box" id="selected-box">Estoure um balão 🎈</div>
+  </div>
+
+  <div id="arena"></div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <p class="progress-text" id="progress-text"></p>
+</div>
+
+<!-- ═══════════ REVEAL OVERLAY ═══════════ -->
+<div id="reveal-overlay">
+  <div class="reveal-backdrop" id="reveal-backdrop"></div>
+  <div class="reveal-card" id="reveal-card">
+    <div class="reveal-emoji" id="reveal-emoji">🎈</div>
+    <div class="reveal-label" id="reveal-label">Produto</div>
+    <div class="reveal-name" id="reveal-name">Nome Aqui</div>
+    <div class="reveal-hint" id="reveal-hint" style="color:var(--muted)">Clique para continuar →</div>
+  </div>
+</div>
+
+<!-- ═══════════ PAIR RESULT OVERLAY ═══════════ -->
+<div id="pair-overlay">
+  <div class="pair-backdrop"></div>
+  <div class="pair-result-card">
+    <div class="pair-result-title">✨ Par da Rodada</div>
+    <div class="pair-result-match">
+      <div class="pair-result-item produto-item">
+        <span>📦</span><span id="pair-produto-name"></span>
+      </div>
+      <div class="pair-result-connector">🔗</div>
+      <div class="pair-result-item cliente-item">
+        <span>🏢</span><span id="pair-cliente-name"></span>
+      </div>
+    </div>
+    <div class="pair-result-round" id="pair-round-info"></div>
+    <button class="btn-continue" id="btn-continue-round">Próxima Rodada →</button>
+  </div>
+</div>
+
+<!-- ═══════════ FINAL SCREEN ═══════════ -->
+<div class="screen" id="final-screen">
+  <div class="trophy">🏆</div>
+  <div class="final-title">Jogo Concluído!</div>
+  <p class="final-subtitle">Todos os balões foram estourados. Confira os pares sorteados:</p>
+
+  <div class="pairs-grid" id="pairs-grid"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="goSetup()">🔄 Jogar Novamente</button>
+  </div>
+</div>
+
+<script>
+// ───────────────────────────────────────────
+//  DEFAULT DATA
+// ───────────────────────────────────────────
+const DEFAULT_PRODUTOS = [
+  "CRM Plus", "ERP Cloud", "Analytics Pro", "DataVault",
+  "SecureNet", "AutoFlow", "MobileFirst", "CloudSync",
+  "InsightAI", "ConnectHub"
+];
+
+const DEFAULT_CLIENTES = [
+  "Banco Alfa", "Varejo Max", "TechCorp", "Logística Brasil",
+  "Saúde Total", "EduFuture", "Agro Digital", "FinTech Ltda",
+  "Construindo SA", "Energia Verde"
+];
+
+// ───────────────────────────────────────────
+//  STATE
+// ───────────────────────────────────────────
+let produtos = [...DEFAULT_PRODUTOS];
+let clientes = [...DEFAULT_CLIENTES];
+let gameProdutos = [];
+let gameClientes = [];
+let pairs = [];
+let currentRound = 0;
+let totalRounds = 0;
+let phase = 'produto'; // 'produto' | 'cliente'
+let pickedProduto = null;
+let pickedCliente = null;
+
+// ───────────────────────────────────────────
+//  SETUP
+// ───────────────────────────────────────────
+const BALLOON_COLORS = [
+  '#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff',
+  '#ff9f43','#48dbfb','#ff6fd8','#a29bfe','#55efc4'
+];
+
+function renderTags(type) {
+  const list = type === 'produto' ? produtos : clientes;
+  const container = document.getElementById(`${type}-tags`);
+  container.innerHTML = '';
+  list.forEach((item, i) => {
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.innerHTML = `${item} <button class="remove" onclick="removeItem('${type}',${i})">×</button>`;
+    container.appendChild(tag);
+  });
+}
+
+function addItem(type) {
+  const input = document.getElementById(`${type}-input`);
+  const val = input.value.trim();
+  if (!val) return;
+  if (type === 'produto') produtos.push(val);
+  else clientes.push(val);
+  input.value = '';
+  renderTags(type);
+  input.focus();
+}
+
+function removeItem(type, idx) {
+  if (type === 'produto') produtos.splice(idx, 1);
+  else clientes.splice(idx, 1);
+  renderTags(type);
+}
+
+function resetToDefaults() {
+  produtos = [...DEFAULT_PRODUTOS];
+  clientes = [...DEFAULT_CLIENTES];
+  renderTags('produto');
+  renderTags('cliente');
+}
+
+document.getElementById('produto-input').addEventListener('keydown', e => { if (e.key === 'Enter') addItem('produto'); });
+document.getElementById('cliente-input').addEventListener('keydown', e => { if (e.key === 'Enter') addItem('cliente'); });
+
+renderTags('produto');
+renderTags('cliente');
+
+function startGame() {
+  const err = document.getElementById('setup-error');
+  const minLen = Math.min(produtos.length, clientes.length);
+  if (minLen < 1) {
+    err.textContent = 'Adicione pelo menos 1 produto e 1 cliente!';
+    err.style.display = 'block';
+    return;
+  }
+  err.style.display = 'none';
+
+  gameProdutos = shuffle([...produtos]);
+  gameClientes = shuffle([...clientes]);
+  totalRounds = minLen;
+  currentRound = 0;
+  pairs = [];
+
+  showScreen('game-screen');
+  startRound();
+}
+
+// ───────────────────────────────────────────
+//  GAME
+// ───────────────────────────────────────────
+function startRound() {
+  phase = 'produto';
+  pickedProduto = null;
+  pickedCliente = null;
+  currentRound++;
+
+  updateRoundUI();
+  spawnBalloons('produto');
+}
+
+function updateRoundUI() {
+  document.getElementById('round-label').textContent = `Rodada ${currentRound} de ${totalRounds}`;
+  setPhaseUI();
+  updateProgress();
+}
+
+function setPhaseUI() {
+  const title = document.getElementById('phase-title');
+  const instr = document.getElementById('phase-instructions');
+  const selBox = document.getElementById('selected-box');
+  if (phase === 'produto') {
+    title.textContent = '📦 Produtos';
+    title.className = 'phase-title produtos';
+    instr.textContent = 'Estoure o balão do produto desta rodada!';
+    selBox.className = 'selected-box';
+    selBox.textContent = 'Estoure um balão 🎈';
+  } else {
+    title.textContent = '🏢 Clientes';
+    title.className = 'phase-title clientes';
+    instr.textContent = 'Agora escolha o cliente! Estoure o balão!';
+    selBox.className = 'selected-box revealed';
+    selBox.innerHTML = `📦 ${pickedProduto} &nbsp;→&nbsp; Escolha o cliente`;
+  }
+}
+
+function updateProgress() {
+  const done = currentRound - 1;
+  const pct = (done / totalRounds) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${done} de ${totalRounds} rodadas concluídas`;
+}
+
+function spawnBalloons(type) {
+  const arena = document.getElementById('arena');
+  arena.innerHTML = '';
+  const list = type === 'produto' ? gameProdutos : gameClientes;
+  const shuffled = shuffle([...list]);
+  const count = Math.min(shuffled.length, 10);
+  const arenaW = arena.offsetWidth || 700;
+  const arenaH = arena.offsetHeight || 380;
+
+  shuffled.slice(0, count).forEach((item, i) => {
+    const color = BALLOON_COLORS[i % BALLOON_COLORS.length];
+    const delay = (Math.random() * 2).toFixed(2);
+    const duration = (3 + Math.random() * 3).toFixed(2);
+    const x = 30 + Math.random() * (arenaW - 130);
+    const y = 20 + Math.random() * (arenaH - 190);
+
+    const el = document.createElement('div');
+    el.className = 'balloon';
+    el.style.cssText = `left:${x}px; top:${y}px; animation-delay:-${delay}s; animation-duration:${duration}s;`;
+    el.dataset.item = item;
+    el.innerHTML = `
+      <div class="balloon-body" style="background:${color}">
+        <div class="balloon-shine"></div>
+        <div class="balloon-question">?</div>
+      </div>
+      <div class="balloon-knot" style="background:${color}"></div>
+      <div class="balloon-string"></div>
+    `;
+    el.addEventListener('click', () => popBalloon(el, item, type, color));
+    arena.appendChild(el);
+  });
+}
+
+function popBalloon(el, item, type, color) {
+  if (el.classList.contains('popping')) return;
+  el.classList.add('popping');
+
+  // Block all other balloons
+  document.querySelectorAll('.balloon').forEach(b => b.style.pointerEvents = 'none');
+
+  const rect = el.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  spawnParticles(cx, cy, color);
+
+  setTimeout(() => {
+    el.remove();
+    showReveal(item, type, color);
+  }, 350);
+}
+
+function showReveal(item, type, color) {
+  const overlay = document.getElementById('reveal-overlay');
+  const card    = document.getElementById('reveal-card');
+  const emoji   = document.getElementById('reveal-emoji');
+  const label   = document.getElementById('reveal-label');
+  const name    = document.getElementById('reveal-name');
+  const hint    = document.getElementById('reveal-hint');
+
+  emoji.textContent = type === 'produto' ? '📦' : '🏢';
+  label.textContent = type === 'produto' ? 'Produto' : 'Cliente';
+  label.style.color = type === 'produto' ? 'var(--accent2)' : 'var(--accent3)';
+  name.textContent  = item;
+  name.style.color  = type === 'produto' ? 'var(--accent1)' : 'var(--accent4)';
+
+  const bgStart = type === 'produto' ? '#2a1a00' : '#001a2a';
+  const bgEnd   = type === 'produto' ? '#1a0a00' : '#000a1a';
+  card.style.background = `linear-gradient(135deg, ${bgStart}, ${bgEnd})`;
+
+  // Reset animations by re-cloning children
+  [emoji, label, name, hint].forEach(el => {
+    el.style.animation = 'none';
+    el.offsetHeight; // reflow
+    el.style.animation = '';
+  });
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'revealPop 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards';
+
+  overlay.style.opacity = '1';
+  overlay.classList.add('active');
+
+  // Launch mini confetti on reveal
+  spawnRevealConfetti(color);
+
+  function closeReveal() {
+    overlay.style.opacity = '0';
+    overlay.classList.remove('active');
+    overlay.removeEventListener('click', closeReveal);
+
+    // Continue game logic
+    if (type === 'produto') {
+      pickedProduto = item;
+      const idx = gameProdutos.indexOf(item);
+      if (idx !== -1) gameProdutos.splice(idx, 1);
+
+      const selBox = document.getElementById('selected-box');
+      selBox.className = 'selected-box revealed';
+      selBox.innerHTML = `📦 <strong>${item}</strong> &nbsp;→&nbsp; Escolha o cliente`;
+
+      phase = 'cliente';
+      setPhaseUI();
+      spawnBalloons('cliente');
+    } else {
+      pickedCliente = item;
+      const idx = gameClientes.indexOf(item);
+      if (idx !== -1) gameClientes.splice(idx, 1);
+
+      pairs.push({ round: currentRound, produto: pickedProduto, cliente: pickedCliente });
+
+      const selBox = document.getElementById('selected-box');
+      selBox.className = 'selected-box revealed';
+      selBox.innerHTML = `🎉 <strong>${pickedProduto}</strong> + <strong>${pickedCliente}</strong>`;
+
+      if (pairs.length >= totalRounds) {
+        showPairResult(pickedProduto, item, true);
+      } else {
+        showPairResult(pickedProduto, item, false);
+      }
+    }
+  }
+
+  setTimeout(() => overlay.addEventListener('click', closeReveal), 800);
+}
+
+function showPairResult(produto, cliente, isLast) {
+  const overlay  = document.getElementById('pair-overlay');
+  const card     = overlay.querySelector('.pair-result-card');
+  const btnLabel = isLast ? 'Ver Resultado Final 🏆' : 'Próxima Rodada →';
+
+  document.getElementById('pair-produto-name').textContent = produto;
+  document.getElementById('pair-cliente-name').textContent = cliente;
+  document.getElementById('pair-round-info').textContent =
+    `Rodada ${currentRound} de ${totalRounds}`;
+
+  const btn = document.getElementById('btn-continue-round');
+  btn.textContent = btnLabel;
+
+  // Reset card animation
+  card.style.animation = 'none';
+  card.offsetHeight;
+  card.style.animation = 'pairCardIn 0.55s cubic-bezier(0.34,1.56,0.64,1) forwards';
+
+  overlay.classList.add('active');
+  spawnRevealConfetti('#c77dff');
+
+  btn.onclick = () => {
+    overlay.classList.remove('active');
+    if (isLast) {
+      setTimeout(showFinal, 300);
+    } else {
+      setTimeout(startRound, 300);
+    }
+  };
+}
+
+function spawnRevealConfetti(color) {
+  const colors = [color, '#ffd93d', '#ffffff', '#ff6b6b', '#6bcb77'];
+  for (let i = 0; i < 30; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.cssText = `
+        left:${20 + Math.random() * 60}vw;
+        top: 30vh;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+        width:${6 + Math.random() * 8}px;
+        height:${6 + Math.random() * 8}px;
+        animation-duration:${1.2 + Math.random() * 1}s;
+        animation-delay:0s;
+        opacity:1;
+      `;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 2500);
+    }, i * 20);
+  }
+}
+
+// ───────────────────────────────────────────
+//  FINAL
+// ───────────────────────────────────────────
+function showFinal() {
+  showScreen('final-screen');
+  launchConfetti();
+
+  const grid = document.getElementById('pairs-grid');
+  grid.innerHTML = '';
+  pairs.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'pair-card';
+    card.innerHTML = `
+      <span class="pair-num">Rodada ${p.round}</span>
+      <span class="pair-produto">📦 ${p.produto}</span>
+      <span class="pair-arrow">↕</span>
+      <span class="pair-cliente">🏢 ${p.cliente}</span>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function goSetup() {
+  showScreen('setup-screen');
+}
+
+// ───────────────────────────────────────────
+//  UTILS
+// ───────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function spawnParticles(cx, cy, color) {
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const angle = (Math.PI * 2 * i) / 14;
+    const dist = 50 + Math.random() * 60;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    p.style.cssText = `
+      left:${cx - 4}px; top:${cy - 4}px;
+      background:${color};
+      --dx:${dx}px; --dy:${dy}px;
+      animation-duration:${0.4 + Math.random() * 0.3}s;
+    `;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 800);
+  }
+}
+
+function launchConfetti() {
+  const colors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#c77dff','#ff9f43'];
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti-piece';
+      c.style.cssText = `
+        left:${Math.random() * 100}vw;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius:${Math.random() > 0.5 ? '50%' : '2px'};
+        width:${6 + Math.random() * 10}px;
+        height:${6 + Math.random() * 10}px;
+        animation-duration:${2 + Math.random() * 2}s;
+        animation-delay:${Math.random() * 0.5}s;
+        opacity:${0.7 + Math.random() * 0.3};
+      `;
+      document.body.appendChild(c);
+      setTimeout(() => c.remove(), 4000);
+    }, i * 30);
+  }
+}
+</script>
+</body>
+</html>
